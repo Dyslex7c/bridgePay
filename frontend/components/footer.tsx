@@ -26,7 +26,7 @@ export default function Footer() {
               <span
                 className={`font-bold text-xl transition-colors duration-200 ${isDark ? "text-white" : "text-black"}`}
               >
-                ChainPay
+                BridgePay
               </span>
             </div>
             <p className={`text-sm transition-colors duration-200 ${isDark ? "text-white/60" : "text-black/60"}`}>
@@ -179,7 +179,7 @@ export default function Footer() {
           `}
         >
           <p className={`text-sm transition-colors duration-200 ${isDark ? "text-white/50" : "text-black/50"}`}>
-            © 2024 ChainPay. All rights reserved.
+            © 2025 BridgePay. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 sm:mt-0">
             <Link

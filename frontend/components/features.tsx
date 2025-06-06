@@ -12,16 +12,6 @@ export default function Features() {
       icon: "⛓️",
     },
     {
-      title: "Enterprise Security",
-      description: "Bank-grade security with multi-signature wallets and audit trails",
-      icon: "🔒",
-    },
-    {
-      title: "Automated Compliance",
-      description: "Built-in compliance tools for global payroll regulations and tax reporting",
-      icon: "📋",
-    },
-    {
       title: "Real-time Analytics",
       description: "Monitor payroll operations across all chains with comprehensive dashboards",
       icon: "📊",
@@ -44,7 +34,7 @@ export default function Features() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
           {features.map((feature, index) => (
             <div
               key={index}

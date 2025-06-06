@@ -30,7 +30,7 @@ export default function Header() {
             <span
               className={`font-bold text-xl transition-colors duration-200 ${isDark ? "text-white" : "text-black"}`}
             >
-              ChainPay
+              BridgePay
             </span>
           </div>
 

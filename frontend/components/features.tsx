@@ -25,7 +25,7 @@ export default function Features() {
           <h2
             className={`text-4xl font-bold mb-6 transition-colors duration-200 ${isDark ? "text-white" : "text-black"}`}
           >
-            Enterprise-Grade Features
+            Features
           </h2>
           <p
             className={`text-xl max-w-2xl mx-auto transition-colors duration-200 ${isDark ? "text-white/70" : "text-black/70"}`}

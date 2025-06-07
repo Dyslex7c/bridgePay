@@ -21,7 +21,7 @@ export default function Hero() {
               <div
                 className={`
                   inline-block px-4 py-2 border rounded-full text-sm font-medium transition-colors duration-200
-                  ${isDark ? "border-white/20 text-white/80 bg-white/5" : "border-black/20 text-black/80 bg-black/5"}
+                  ${isDark ? "border-white/20 text-white/80 bg-blue-800" : "border-black/20 text-black/80 bg-blue-200"}
                 `}
               >
                 Powered by Chainlink CCIP
@@ -106,7 +106,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setAnimationCycle((prev) => (prev + 1) % 1000) // Large number to avoid overflow
-    }, 8000) // Changed from 4000 to 5000 (4s animation + 1s gap)
+    }, 4000) // Changed from 4000 to 5000 (4s animation + 1s gap)
 
     return () => clearInterval(interval)
   }, [])
@@ -135,7 +135,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
         {/* Arbitrum - Top Right */}
         <div className="absolute" style={{ top: "64px", right: "64px" }}>
           <div
-            className={`relative w-16 h-16 rounded-full border-2 border-blue-400 ${bgColor === "black" ? "bg-gray-800" : "bg-gray-50"} flex items-center justify-center overflow-hidden`}
+            className={`relative w-16 h-16 rounded-full border-2 border-[#2d394a] ${bgColor === "black" ? "bg-gray-800" : "bg-gray-50"} flex items-center justify-center overflow-hidden`}
           >
             <img
               src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png"
@@ -145,8 +145,8 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
             {/* Absorption effect - triggers for every cycle */}
             <div
               key={`arbitrum-absorb-${animationCycle}`}
-              className="absolute inset-0 rounded-full bg-blue-400 opacity-0 animate-absorb"
-              style={{ animationDelay: "5s" }}
+              className="absolute inset-0 rounded-full bg-[#2d394a] opacity-0 animate-absorb"
+              style={{ animationDelay: "4s" }}
             ></div>
           </div>
           <p className={`text-xs text-center mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Arbitrum</p>
@@ -166,7 +166,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
             <div
               key={`optimism-absorb-${animationCycle}`}
               className="absolute inset-0 rounded-full bg-red-400 opacity-0 animate-absorb"
-              style={{ animationDelay: "5s" }}
+              style={{ animationDelay: "4s" }}
             ></div>
           </div>
           <p className={`text-xs text-center mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Optimism</p>
@@ -182,7 +182,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
             <div
               key={`base-absorb-${animationCycle}`}
               className="absolute inset-0 rounded-full bg-blue-600 opacity-0 animate-absorb"
-              style={{ animationDelay: "5s" }}
+              style={{ animationDelay: "4s" }}
             ></div>
           </div>
           <p className={`text-xs text-center mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Base</p>
@@ -202,7 +202,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
             <div
               key={`avalanche-absorb-${animationCycle}`}
               className="absolute inset-0 rounded-full bg-red-500 opacity-0 animate-absorb"
-              style={{ animationDelay: "5s" }}
+              style={{ animationDelay: "4s" }}
             ></div>
           </div>
           <p className={`text-xs text-center mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Avalanche</p>
@@ -372,7 +372,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
 
         .animate-to-optimism {
           animation: to-optimism 3s forwards;
-          animation-delay: 0.5s;
+          animation-delay: 0.4s;
         }
 
         .animate-to-base {
@@ -382,7 +382,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
 
         .animate-to-avalanche {
           animation: to-avalanche 3s forwards;
-          animation-delay: 1.5s;
+          animation-delay: 1.4s;
         }
 
         .animate-absorb {

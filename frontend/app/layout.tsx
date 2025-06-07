@@ -1,19 +1,28 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
+import { Providers } from "./providers"
+import { cookieToInitialState } from "wagmi"
+import { getConfig } from "./config"
+import { headers } from "next/headers"
+import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-  title: "ChainPay - Multi-Chain Payroll System",
+  title: "BridgePay - Multi-Chain Payroll System",
   description:
     "Seamlessly manage cross-chain payroll operations with Chainlink's Cross-Chain Interoperability Protocol",
   viewport: "width=100%, initial-scale=1",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const initialState = cookieToInitialState(
+    getConfig(),
+    (await headers()).get("cookie")
+  );
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -24,7 +33,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-black text-white">{children}</body>
+      <body className="antialiased bg-black text-white">
+        <ThemeProvider>
+          <Providers initialState={initialState}>
+            {children}
+          </Providers>
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

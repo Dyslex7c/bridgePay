@@ -4,6 +4,7 @@ import Link from "next/link"
 import ThemeToggle from "./theme-toggle"
 import CTAButton from "./cta-button"
 import { useTheme } from "./theme-provider"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 
 export default function Header() {
   const { isDark } = useTheme()
@@ -68,14 +69,7 @@ export default function Header() {
           {/* Actions */}
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <button
-              className={`
-                text-sm font-medium transition-colors duration-200
-                ${isDark ? "text-white/80 hover:text-white" : "text-black/80 hover:text-black"}
-              `}
-            >
-              Sign In
-            </button>
+            <ConnectButton />
             <CTAButton size="sm">Get Started</CTAButton>
           </div>
         </div>

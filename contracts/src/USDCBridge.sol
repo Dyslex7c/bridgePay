@@ -18,10 +18,10 @@ contract USDCBridge is CCIPReceiver, OwnerIsCreator {
 
     error USDCBridge__NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees);
     error USDCBridge__NothingToWithdraw();
-    error DestinationChainNotAllowed(uint64 destinationChainSelector);
-    error SourceChainNotAllowed(uint64 sourceChainSelector);
-    error SenderNotAllowed(address sender);
-    error InvalidReceiverAddress();
+    error USDCBridge__DestinationChainNotAllowed(uint64 destinationChainSelector);
+    error USDCBridge__SourceChainNotAllowed(uint64 sourceChainSelector);
+    error USDCBridge__SenderNotAllowed(address sender);
+    error USDCBridge__InvalidReceiverAddress();
 
     event MessageSent(
         bytes32 indexed messageId,
@@ -39,8 +39,8 @@ contract USDCBridge is CCIPReceiver, OwnerIsCreator {
         uint256 amount
     );
 
-    IERC20 public immutable usdc;
-    IERC20 public immutable linkToken;
+    IERC20 public immutable i_usdcToken;
+    IERC20 public immutable i_linkToken;
     
     mapping(uint64 => bool) public allowlistedDestinationChains;
     mapping(uint64 => bool) public allowlistedSourceChains;
@@ -48,25 +48,25 @@ contract USDCBridge is CCIPReceiver, OwnerIsCreator {
 
     modifier onlyAllowlistedDestinationChain(uint64 _destinationChainSelector) {
         if (!allowlistedDestinationChains[_destinationChainSelector])
-            revert DestinationChainNotAllowed(_destinationChainSelector);
+            revert USDCBridge__DestinationChainNotAllowed(_destinationChainSelector);
         _;
     }
 
     modifier onlyAllowlisted(uint64 _sourceChainSelector, address _sender) {
         if (!allowlistedSourceChains[_sourceChainSelector])
-            revert SourceChainNotAllowed(_sourceChainSelector);
-        if (!allowlistedSenders[_sender]) revert SenderNotAllowed(_sender);
+            revert USDCBridge__SourceChainNotAllowed(_sourceChainSelector);
+        if (!allowlistedSenders[_sender]) revert USDCBridge__SenderNotAllowed(_sender);
         _;
     }
 
     modifier validateReceiver(address _receiver) {
-        if (_receiver == address(0)) revert InvalidReceiverAddress();
+        if (_receiver == address(0)) revert USDCBridge__InvalidReceiverAddress();
         _;
     }
 
     constructor(address _router, address _usdc, address _linkToken) CCIPReceiver(_router) {
-        usdc = IERC20(_usdc);
-        linkToken = IERC20(_linkToken);
+        i_usdcToken = IERC20(_usdc);
+        i_linkToken = IERC20(_linkToken);
     }
 
     /**
@@ -86,21 +86,21 @@ contract USDCBridge is CCIPReceiver, OwnerIsCreator {
         validateReceiver(_receiver)
         returns (bytes32 messageId)
     {
-        Client.EVM2AnyMessage memory message = _buildCCIPMessage(_receiver, _amount, address(linkToken)); 
+        Client.EVM2AnyMessage memory message = _buildCCIPMessage(_receiver, _amount, address(i_linkToken)); 
 
         // Initialize a router client instance to interact with cross-chain router
         IRouterClient router = IRouterClient(this.getRouter());
 
         uint256 fees = router.getFee(_destinationChainSelector, message);
 
-        if (fees > linkToken.balanceOf(address(this)))
-            revert USDCBridge__NotEnoughBalance(linkToken.balanceOf(address(this)), fees);
+        if (fees > i_linkToken.balanceOf(address(this)))
+            revert USDCBridge__NotEnoughBalance(i_linkToken.balanceOf(address(this)), fees);
 
         // Approve the Router to transfer USDC tokens on contract's behalf
-        usdc.approve(address(router), _amount);
+        i_usdcToken.approve(address(router), _amount);
         
         // Approve the Router to transfer LINK tokens for fees
-        linkToken.approve(address(router), fees);
+        i_linkToken.approve(address(router), fees);
 
         // Send the message through the router and store the returned message ID
         messageId = router.ccipSend(_destinationChainSelector, message);
@@ -131,7 +131,7 @@ contract USDCBridge is CCIPReceiver, OwnerIsCreator {
         Client.EVMTokenAmount[]
             memory tokenAmounts = new Client.EVMTokenAmount[](1);
         tokenAmounts[0] = Client.EVMTokenAmount({
-            token: address(usdc),
+            token: address(i_usdcToken),
             amount: _amount
         });
 

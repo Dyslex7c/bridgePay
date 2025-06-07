@@ -106,7 +106,7 @@ function CrossChainPayrollAnimation({ isDark }: { isDark: boolean }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setAnimationCycle((prev) => (prev + 1) % 1000) // Large number to avoid overflow
-    }, 4000) // Changed from 4000 to 5000 (4s animation + 1s gap)
+    }, 6000) // Changed from 4000 to 5000 (4s animation + 1s gap)
 
     return () => clearInterval(interval)
   }, [])

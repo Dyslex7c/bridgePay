@@ -62,7 +62,7 @@ deploy-base:
 	TARGET_CHAIN=base forge script script/DeployUSDCBridge.s.sol:DeployUSDCBridge --rpc-url $(BASE_SEPOLIA_RPC_URL) --account myaccount default --broadcast --verify -vvvv
 
 deploy-op:
-	TARGET_CHAIN=base forge script script/DeployUSDCBridge.s.sol:DeployUSDCBridge --rpc-url $(OP_SEPOLIA_RPC_URL) --account myaccount default --broadcast --verify -vvvv
+	TARGET_CHAIN=base forge script script/DeployUSDCBridge.s.sol:DeployUSDCBridge --rpc-url $(OPTIMISM_SEPOLIA_RPC_URL) --account myaccount default --broadcast --verify -vvvv
 
 deploy-avax:
-	TARGET_CHAIN=base forge script script/DeployUSDCBridge.s.sol:DeployUSDCBridge --rpc-url $(AVAX_FUJI_RPC_URL) --account myaccount default --broadcast --verify -vvvv
+	TARGET_CHAIN=base forge script script/DeployUSDCBridge.s.sol:DeployUSDCBridge --rpc-url $(AVALANCHE_FUJI_RPC_URL) --account myaccount default --broadcast --verify -vvvv

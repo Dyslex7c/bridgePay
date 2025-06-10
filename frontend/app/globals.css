@@ -227,3 +227,90 @@ input::placeholder {
 .btn-shadow-hover {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
+
+@keyframes modal-overlay-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-overlay-hide {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-content-show {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-content-hide {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96) translateY(8px);
+  }
+}
+
+@keyframes slide-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply smooth animations */
+.modal-overlay-animate {
+  animation: modal-overlay-show 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay-animate[data-state="closed"] {
+  animation: modal-overlay-hide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content-animate {
+  animation: modal-content-show 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content-animate[data-state="closed"] {
+  animation: modal-content-hide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chain-item-animate {
+  animation: slide-in-from-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal-header-animate {
+  animation: slide-in-from-top 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}

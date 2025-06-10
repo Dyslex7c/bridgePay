@@ -1,6 +1,5 @@
 "use client"
 
-import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
 import Hero from "@/components/hero"
 import BlockchainMarquee from "@/components/blockchain-marquee"
@@ -10,7 +9,6 @@ import Footer from "@/components/footer"
 
 export default function Home() {
   return (
-    <ThemeProvider>
       <div className="min-h-screen">
         <Header />
         <Hero />
@@ -19,6 +17,5 @@ export default function Home() {
         <CTASection />
         <Footer />
       </div>
-    </ThemeProvider>
   )
 }

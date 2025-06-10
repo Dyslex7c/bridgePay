@@ -1,11 +1,13 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import CTAButton from "./cta-button"
 import { useTheme } from "./theme-provider"
 import { useEffect, useState } from "react"
 
 export default function Hero() {
   const { isDark } = useTheme()
+  const router = useRouter();
 
   return (
     <section
@@ -20,8 +22,8 @@ export default function Hero() {
             <div className="space-y-6">
               <div
                 className={`
-                  inline-block px-4 py-2 border rounded-full text-sm font-medium transition-colors duration-200
-                  ${isDark ? "border-white/20 text-white/80 bg-blue-800" : "border-black/20 text-black/80 bg-blue-200"}
+                  inline-block px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
+                  ${isDark ? "text-white/80 bg-blue-800" : "text-black/80 bg-blue-200"}
                 `}
               >
                 Powered by Chainlink CCIP
@@ -77,7 +79,7 @@ export default function Hero() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <CTAButton size="lg" className="rounded-xl">
+              <CTAButton onClick={() => router.push("/bridge")} size="lg" className="rounded-xl">
                 Request Early Access
               </CTAButton>
               <CTAButton variant="outline" size="lg" className="rounded-xl">

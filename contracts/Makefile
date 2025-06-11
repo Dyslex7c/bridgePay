@@ -66,3 +66,6 @@ deploy-op:
 
 deploy-avax:
 	TARGET_CHAIN=base forge script script/DeployUSDCBridge.s.sol:DeployUSDCBridge --rpc-url $(AVALANCHE_FUJI_RPC_URL) --account myaccount default --broadcast --verify -vvvv
+
+deploy-batcher:
+	forge script script/DeployUSDCBridgeBatcher.s.sol:DeployUSDCBridgeBatcher --rpc-url $(SEPOLIA_RPC_URL) --account myaccount default --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv

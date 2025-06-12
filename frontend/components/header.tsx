@@ -5,9 +5,11 @@ import ThemeToggle from "./theme-toggle"
 import CTAButton from "./cta-button"
 import { useTheme } from "./theme-provider"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { useRouter } from "next/navigation"
 
 export default function Header() {
   const { isDark } = useTheme()
+  const router = useRouter();
 
   return (
     <header
@@ -18,7 +20,7 @@ export default function Header() {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <div onClick={() => router.push("/")} className="flex items-center space-x-3 hover:cursor-pointer">
             <div
               className={`
                 w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-200

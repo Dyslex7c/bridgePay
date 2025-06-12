@@ -79,7 +79,7 @@ export default function Hero() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <CTAButton onClick={() => router.push("/bridge")} size="lg" className="rounded-xl">
+              <CTAButton onClick={() => router.push("/enter")} size="lg" className="rounded-xl">
                 Request Early Access
               </CTAButton>
               <CTAButton variant="outline" size="lg" className="rounded-xl">

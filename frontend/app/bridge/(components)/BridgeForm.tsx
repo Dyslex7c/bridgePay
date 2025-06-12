@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowRight, ArrowUpDown, AlertCircle, Loader2 } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
-import ChainSelector from "./ChainSelector"
+import ChainSelector from "../../(components)/ChainSelector"
 import TransactionSummary from "./TransactionSummary"
 import type { Chain } from "wagmi/chains"
 
@@ -23,6 +23,7 @@ interface BridgeFormProps {
   chainId: number
   onSubmit: () => void
   onChainSwitch: (chainId: number) => void
+  errorMessage: string | null
 }
 
 export default function BridgeForm({
@@ -38,6 +39,7 @@ export default function BridgeForm({
   chainId,
   onSubmit,
   onChainSwitch,
+  errorMessage,
 }: BridgeFormProps) {
   const { isDark } = useTheme()
   const isFormValid = beneficiaryAddress && usdcAmount && destinationChainSelector && isConnected
@@ -45,11 +47,10 @@ export default function BridgeForm({
   return (
     <>
       <Card
-        className={`transition-all duration-500 ${
-          isDark
+        className={`transition-all duration-500 ${isDark
             ? "bg-gradient-to-br from-black to-blue-700/20 border-black backdrop-blur-xl shadow-2xl"
             : "bg-gradient-to-br from-white to-blue-500/10 border-white backdrop-blur-xl shadow-2xl"
-        }`}
+          }`}
       >
         <CardHeader className="pb-6">
           <CardTitle
@@ -80,11 +81,10 @@ export default function BridgeForm({
               placeholder="0x..."
               value={beneficiaryAddress}
               onChange={(e) => setBeneficiaryAddress(e.target.value)}
-              className={`h-14 text-lg font-[Inter] transition-all duration-300 focus:scale-[1.02] ${
-                isDark
+              className={`h-14 text-lg font-[Inter] transition-all duration-300 focus:scale-[1.02] ${isDark
                   ? "bg-white/5 border-white/20 text-white placeholder:text-white/50 focus:border-white/40"
                   : "bg-white border-black/10 text-black placeholder:text-black/50 focus:border-black/30"
-              }`}
+                }`}
             />
           </div>
 
@@ -96,11 +96,10 @@ export default function BridgeForm({
                 type="number"
                 value={usdcAmount}
                 onChange={(e) => setUsdcAmount(e.target.value)}
-                className={`h-14 text-lg font-[Inter] pr-20 transition-all duration-300 focus:scale-[1.02] ${
-                  isDark
+                className={`h-14 text-lg font-[Inter] pr-20 transition-all duration-300 focus:scale-[1.02] ${isDark
                     ? "bg-white/5 border-white/20 text-white placeholder:text-white/50 focus:border-white/40"
                     : "bg-white border-black/10 text-black placeholder:text-black/50 focus:border-black/30"
-                }`}
+                  }`}
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3">
                 <img
@@ -118,11 +117,10 @@ export default function BridgeForm({
           <Button
             onClick={onSubmit}
             disabled={!isFormValid || loading}
-            className={`w-full h-16 text-lg font-[Poppins] transition-all duration-300 hover:scale-[1.02] ${
-              isDark
+            className={`w-full h-16 text-lg font-[Poppins] transition-all duration-300 hover:scale-[1.02] ${isDark
                 ? "bg-gradient-to-r from-white to-gray-100 text-black hover:from-gray-100 hover:to-white disabled:from-white/20 disabled:to-white/20 disabled:text-white/50"
                 : "bg-gradient-to-r from-black to-gray-900 text-white hover:from-gray-900 hover:to-black disabled:from-black/20 disabled:to-black/20 disabled:text-black/50"
-            } shadow-xl`}
+              } shadow-xl`}
           >
             {loading ? (
               <>
@@ -149,7 +147,14 @@ export default function BridgeForm({
           )}
         </CardContent>
       </Card>
-
+      {errorMessage && (
+        <Alert className={`${isDark ? "border-red-500/20 bg-red-500/10" : "border-red-600/20 bg-red-600/10"}`}>
+          <AlertCircle className="h-5 w-5" />
+          <AlertDescription className={`font-[Inter] font-medium pt-1 ${isDark ? "text-red-500" : "text-red-600"}`}>
+            {errorMessage}
+          </AlertDescription>
+        </Alert>
+      )}
       <TransactionSummary
         beneficiaryAddress={beneficiaryAddress}
         usdcAmount={usdcAmount}

@@ -18,6 +18,7 @@ export default function Bridge() {
   const [messageId, setMessageId] = useState<`0x${string}` | undefined>()
   const [isProcessingReceipt, setIsProcessingReceipt] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { isDark } = useTheme()
   const { writeContractAsync } = useWriteContract()
@@ -29,6 +30,11 @@ export default function Bridge() {
   const handleSubmit = async () => {
     if (!beneficiaryAddress || !usdcAmount || !destinationChainSelector) {
       return
+    }
+
+    if (Number(usdcAmount) <= 0) {
+        setErrorMessage("Please enter a valid USDC amount (greater than zero)")
+        return
     }
 
     try {
@@ -92,8 +98,8 @@ export default function Bridge() {
             chainId={chainId}
             onSubmit={handleSubmit}
             onChainSwitch={handleChainSwitch}
+            errorMessage={errorMessage}
           />
-
           {(loading || transactionHash) && (
             <TransactionStatus
               loading={loading}

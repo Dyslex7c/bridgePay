@@ -1,11 +1,206 @@
 export const contractAddress = "0x03D8487343D7e5e8E8bB81039083EF9652B4c2ba";
 
+export const batchContractAddress = "0xD987E37667b7DD9FAEE3274Cd96272205ea1Db9E";
+
 export const destinationChains = [
     { id: 11155111, name: "Ethereum", selector: "16015286601757825753" },
     { id: 421614, name: "Arbitrum", selector: "3478487238524512106" },
     { id: 11155420, name: "Optimism", selector: "5224473277236331295" },
     { id: 43113, name: "Avalanche", selector: "14767482510784806043" },
     { id: 84532, name: "Base", selector: "10344971235874465080" },
+];
+
+export const chainSelectorMapping: Record<string, { name: string; logo: string }> = {
+  "16015286601757825753": { name: "Ethereum", logo: "https://assets.coingecko.com/coins/images/279/small/ethereum.png" },
+  "3478487238524512106": {
+    name: "Arbitrum",
+    logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png",
+  },
+  "5224473277236331295": { name: "Optimism", logo: "https://assets.coingecko.com/coins/images/25244/small/Optimism.png" },
+  "14767482510784806043": {
+    name: "Avalanche",
+    logo: "https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
+  },
+  "10344971235874465080": {
+    name: "Base",
+    logo: "https://raw.githubusercontent.com/base/brand-kit/main/logo/symbol/Base_Symbol_Blue.png",
+  },
+}
+
+export const batcherAbi = [
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "_usdcBridge",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_usdc",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_link",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "batchSendUSDC",
+    "inputs": [
+      {
+        "name": "transfers",
+        "type": "tuple[]",
+        "internalType": "struct USDCBridgeBatcher.TransferRequest[]",
+        "components": [
+          {
+            "name": "destinationChainSelector",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "receiver",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "amount",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "messageIds",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getBatchFees",
+    "inputs": [
+      {
+        "name": "transfers",
+        "type": "tuple[]",
+        "internalType": "struct USDCBridgeBatcher.TransferRequest[]",
+        "components": [
+          {
+            "name": "destinationChainSelector",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "receiver",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "amount",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "totalFees",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "individualFees",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "i_linkToken",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IERC20"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "i_usdcBridge",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract USDCBridge"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "i_usdcToken",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IERC20"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "BatchTransferCompleted",
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "totalTransfers",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "messageIds",
+        "type": "bytes32[]",
+        "indexed": false,
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "totalFees",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "USDCBridgeBatcher__NoTransfersSpecified",
+    "inputs": []
+  }
 ];
 
 export const usdcBridgeAbi = [

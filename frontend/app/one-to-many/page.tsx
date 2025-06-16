@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAccount, useChainId, useSwitchChain, useWriteContract, usePublicClient } from "wagmi"
 import { parseUnits } from "viem"
 import { useTheme } from "@/components/theme-provider"
@@ -11,6 +11,7 @@ import AddBeneficiaryForm from "./(components)/AddBeneficiaryForm"
 import BatchSummary from "./(components)/BatchSummary"
 import BatchTransactionStatus from "./(components)/BatchTransactionStatus"
 import { batchContractAddress, batcherAbi } from "../constants"
+import type { Employee } from "@/types/employee"
 
 type Beneficiary = {
   nickname: string
@@ -29,6 +30,11 @@ export default function OneToMany() {
   const [transactionHash, setTransactionHash] = useState<`0x${string}`>()
   const [isProcessingReceipt, setIsProcessingReceipt] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+  const [loadingEmployees, setLoadingEmployees] = useState(true)
+  const [addingAllEmployees, setAddingAllEmployees] = useState(false)
 
   const { isDark } = useTheme()
   const { chains, switchChain } = useSwitchChain()
@@ -69,6 +75,58 @@ export default function OneToMany() {
     setUsdcAmount("")
     setDestinationChainSelector("")
     setErrorMessage(null)
+  }
+
+  const handleAddAllEmployees = async () => {
+    if (!isConnected) {
+      setErrorMessage("Please connect your wallet first")
+      return
+    }
+
+    if (employees.length === 0) {
+      setErrorMessage("No employees found to add")
+      return
+    }
+
+    try {
+      setAddingAllEmployees(true)
+      setErrorMessage(null)
+
+      const employeeBeneficiaries: Beneficiary[] = employees.map((employee) => ({
+        nickname: employee.name,
+        beneficiaryAddress: employee.walletAddress,
+        destinationChainSelector: employee.preferredChain,
+        usdcAmount: employee.monthlySalary.toString(),
+      }))
+
+      const existingAddresses = new Set(listOfBeneficiaries.map((b) => b.beneficiaryAddress.toLowerCase()))
+      const newBeneficiaries = employeeBeneficiaries.filter(
+        (emp) => !existingAddresses.has(emp.beneficiaryAddress.toLowerCase()),
+      )
+
+      if (newBeneficiaries.length === 0) {
+        setErrorMessage("All employees are already added to the batch")
+        return
+      }
+
+      setListOfBeneficiaries((prev) => [...prev, ...newBeneficiaries])
+
+      const addedCount = newBeneficiaries.length
+      const skippedCount = employees.length - addedCount
+
+      if (skippedCount > 0) {
+        setErrorMessage(`Added ${addedCount} employees. ${skippedCount} were already in the batch.`)
+      }
+
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 3000)
+    } catch (error) {
+      console.error("Failed to add all employees:", error)
+      setErrorMessage("Failed to add employees. Please try again.")
+    } finally {
+      setAddingAllEmployees(false)
+    }
   }
 
   const handleBatchTransfer = async () => {
@@ -120,6 +178,33 @@ export default function OneToMany() {
     setListOfBeneficiaries((prev) => prev.filter((_, i) => i !== index))
   }
 
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        setLoadingEmployees(true)
+        const response = await fetch("/api/employees")
+        if (response.ok) {
+          const data = await response.json()
+          setEmployees(data.employees || [])
+        }
+      } catch (error) {
+        console.error("Failed to fetch employees:", error)
+      } finally {
+        setLoadingEmployees(false)
+      }
+    }
+
+    fetchEmployees()
+  }, [])
+
+  const handleSelectEmployee = (employee: Employee) => {
+    setNickname(employee.name)
+    setBeneficiaryAddress(employee.walletAddress)
+    setDestinationChainSelector(employee.preferredChain)
+    setUsdcAmount(employee.monthlySalary.toString())
+    setErrorMessage(null)
+  }
+
   return (
     <div className={`min-h-screen pt-20 pb-12 transition-colors duration-300 ${isDark ? "bg-black" : "bg-white"}`}>
       <Header />
@@ -142,6 +227,13 @@ export default function OneToMany() {
             chainId={chainId}
             onChainSwitch={handleChainSwitch}
             errorMessage={errorMessage}
+            employees={employees}
+            selectedEmployee={selectedEmployee}
+            setSelectedEmployee={setSelectedEmployee}
+            onSelectEmployee={handleSelectEmployee}
+            loadingEmployees={loadingEmployees}
+            onAddAllEmployees={handleAddAllEmployees}
+            addingAllEmployees={addingAllEmployees}
           />
 
           <BatchSummary

@@ -3,10 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, AlertCircle } from "lucide-react"
+import { Plus, AlertCircle, Users, UserPlus } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import ChainSelector from "../../(components)/ChainSelector"
 import type { Chain } from "wagmi/chains"
+import type { Employee } from "@/types/employee"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AddBeneficiaryFormProps {
   nickname: string
@@ -23,6 +25,13 @@ interface AddBeneficiaryFormProps {
   chainId: number
   onChainSwitch: (chainId: number) => void
   errorMessage: string | null
+  employees: Employee[]
+  selectedEmployee: Employee | null
+  setSelectedEmployee: (employee: Employee | null) => void
+  onSelectEmployee: (employee: Employee) => void
+  loadingEmployees: boolean
+  onAddAllEmployees: () => void
+  addingAllEmployees: boolean
 }
 
 export default function AddBeneficiaryForm({
@@ -40,9 +49,18 @@ export default function AddBeneficiaryForm({
   chainId,
   onChainSwitch,
   errorMessage,
+  employees,
+  selectedEmployee,
+  setSelectedEmployee,
+  onSelectEmployee,
+  loadingEmployees,
+  onAddAllEmployees,
+  addingAllEmployees,
 }: AddBeneficiaryFormProps) {
   const { isDark } = useTheme()
   const isFormValid = nickname && beneficiaryAddress && destinationChainSelector && usdcAmount && isConnected
+
+  const totalEmployeeSalary = employees.reduce((sum, emp) => sum + emp.monthlySalary, 0)
 
   return (
     <>
@@ -61,6 +79,150 @@ export default function AddBeneficiaryForm({
           <CardDescription className={`text-sm font-[Inter] ${isDark ? "text-white/60" : "text-black/60"}`}>
             Configure recipient details for your batch payment
           </CardDescription>
+
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className={`w-1 h-6 rounded-full ${isDark ? "bg-blue-400" : "bg-blue-600"}`} />
+              <h3 className={`text-lg font-[Poppins] font-semibold ${isDark ? "text-white" : "text-black"}`}>
+                Quick Select Employee
+              </h3>
+            </div>
+
+            {loadingEmployees ? (
+              <div className={`h-14 rounded-xl animate-pulse ${isDark ? "bg-white/5" : "bg-black/5"}`} />
+            ) : employees.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "none") {
+                          setSelectedEmployee(null)
+                        } else {
+                          const employee = employees.find((emp) => emp._id === value)
+                          if (employee) {
+                            setSelectedEmployee(employee)
+                            onSelectEmployee(employee)
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        className={`h-14 text-lg font-[Inter] transition-all duration-300 ${isDark ? "bg-white/5 border-white/20 text-white focus:border-white/40" : "bg-white border-black/10 text-black focus:border-black/30"}`}
+                      >
+                        <SelectValue placeholder="Select an employee to auto-fill details..." />
+                      </SelectTrigger>
+                      <SelectContent className={`${isDark ? "bg-black border-white/20" : "bg-white border-black/10"}`}>
+                        <SelectItem
+                          value="none"
+                          className={`${isDark ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"}`}
+                        >
+                          Manual Entry
+                        </SelectItem>
+                        {employees.map((employee) => (
+                          <SelectItem
+                            key={employee._id}
+                            value={employee._id!}
+                            className={`${isDark ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"}`}
+                          >
+                            <div className="flex items-center gap-3 py-1">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${isDark ? "bg-blue-500/20 text-blue-300" : "bg-blue-500/20 text-blue-700"}`}
+                              >
+                                {employee.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{employee.name}</span>
+                                <span className={`text-xs ${isDark ? "text-white/60" : "text-black/60"}`}>
+                                  ${employee.monthlySalary} USDC/month
+                                </span>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    onClick={onAddAllEmployees}
+                    disabled={!isConnected || addingAllEmployees || employees.length === 0}
+                    className={`h-14 px-6 font-[Poppins] font-semibold transition-all duration-300 hover:scale-[1.02] ${isDark ? "bg-gradient-to-r from-blue-800 to-indigo-800 text-white disabled:from-green-600/30 disabled:to-emerald-600/30" : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white disabled:from-green-600/30 disabled:to-emerald-600/30"} shadow-xl`}
+                  >
+                    {addingAllEmployees ? (
+                      <>
+                        <div className="w-5 h-5 mr-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Users className="w-5 h-5 mr-3" />
+                        Add All ({employees.length})
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                <div
+                  className={`p-4 rounded-xl border ${isDark ? "bg-indigo-500/10 border-indigo-500/20" : "bg-sky-500/10 border-sky-500/20"}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-lg ${isDark ? "bg-blue-500/20" : "bg-sky-500/20"}`}>
+                      <UserPlus className={`w-5 h-5 ${isDark ? "text-blue-300" : "text-sky-700"}`} />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className={`font-semibold font-[Inter] mb-1 ${isDark ? "text-blue-200" : "text-sky-800"}`}>
+                        Bulk Add All Employees
+                      </h4>
+                      <p className={`text-sm mb-2 ${isDark ? "text-blue-400" : "text-sky-700/80"}`}>
+                        Add all {employees.length} employees to the batch with their monthly salaries
+                      </p>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className={`${isDark ? "text-blue-400" : "text-sky-700"}`}>
+                          <strong>Total Amount:</strong> ${totalEmployeeSalary.toLocaleString()} USDC
+                        </span>
+                        <span className={`${isDark ? "text-blue-400" : "text-sky-700"}`}>
+                          <strong>Employees:</strong> {employees.length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedEmployee && (
+                  <div
+                    className={`p-4 rounded-xl border ${isDark ? "bg-blue-500/10 border-blue-500/20" : "bg-blue-500/10 border-blue-500/20"}`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${isDark ? "bg-blue-500/30 text-blue-200" : "bg-blue-500/30 text-blue-800"}`}
+                      >
+                        {selectedEmployee.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className={`font-semibold font-[Inter] ${isDark ? "text-blue-200" : "text-blue-800"}`}>
+                          {selectedEmployee.name}
+                        </p>
+                        <p className={`text-sm ${isDark ? "text-blue-300/80" : "text-blue-700/80"}`}>
+                          Auto-filled from employee database
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div
+                className={`p-4 rounded-xl border ${isDark ? "bg-yellow-500/10 border-yellow-500/20" : "bg-yellow-500/10 border-yellow-500/20"}`}
+              >
+                <p className={`text-sm font-[Inter] ${isDark ? "text-yellow-200" : "text-yellow-800"}`}>
+                  No employees found. Add employees first to use quick select.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className={`w-full h-px ${isDark ? "bg-white/10" : "bg-black/10"} mb-6`} />
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

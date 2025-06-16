@@ -5,12 +5,14 @@ import { useTheme } from "@/components/theme-provider"
 import { destinationChains } from "@/app/constants"
 
 interface TransactionSummaryProps {
+  recipientName: string
   beneficiaryAddress: string
   usdcAmount: string
   destinationChainSelector: string
 }
 
 export default function TransactionSummary({
+  recipientName,
   beneficiaryAddress,
   usdcAmount,
   destinationChainSelector,
@@ -46,6 +48,14 @@ export default function TransactionSummary({
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {recipientName && (
+          <div className="flex justify-between items-center p-2 rounded-xl bg-gradient-to-r from-transparent to-white/5">
+            <span className={`text-sm font-[Inter] ${isDark ? "text-white/70" : "text-black/70"}`}>Recipient Name</span>
+            <span className={`text-sm font-[Inter] ${isDark ? "text-white" : "text-black"}`}>
+              {recipientName}
+            </span>
+          </div>
+        )}
         {beneficiaryAddress && (
           <div className="flex justify-between items-center p-2 rounded-xl bg-gradient-to-r from-transparent to-white/5">
             <span className={`text-sm font-[Inter] ${isDark ? "text-white/70" : "text-black/70"}`}>Recipient</span>

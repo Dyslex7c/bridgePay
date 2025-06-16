@@ -48,13 +48,13 @@ export default function Header() {
               Features
             </Link>
             <Link
-              href="#chains"
+              href="/employees"
               className={`
                 text-sm font-medium transition-colors duration-200
                 ${isDark ? "text-white/80 hover:text-white" : "text-black/80 hover:text-black"}
               `}
             >
-              Supported Chains
+              Team
             </Link>
             <Link
               href="#docs"

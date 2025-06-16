@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAccount, useChainId, usePublicClient, useSwitchChain, useWriteContract } from "wagmi"
 import { parseUnits } from "viem"
 import { useTheme } from "@/components/theme-provider"
@@ -9,8 +9,10 @@ import BridgeForm from "./(components)/BridgeForm"
 import TransactionStatus from "./(components)/TransactionStatus"
 import { contractAddress, usdcBridgeAbi } from "../constants"
 import Footer from "@/components/footer"
+import type { Employee } from "@/types/employee"
 
 export default function Bridge() {
+  const [recipientName, setRecipientName] = useState("")
   const [beneficiaryAddress, setBeneficiaryAddress] = useState("")
   const [usdcAmount, setUsdcAmount] = useState("")
   const [destinationChainSelector, setDestinationChainSelector] = useState("")
@@ -18,7 +20,9 @@ export default function Bridge() {
   const [messageId, setMessageId] = useState<`0x${string}` | undefined>()
   const [isProcessingReceipt, setIsProcessingReceipt] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [employeesLoading, setEmployeesLoading] = useState(true)
 
   const { isDark } = useTheme()
   const { writeContractAsync } = useWriteContract()
@@ -27,18 +31,39 @@ export default function Bridge() {
   const chainId = useChainId()
   const { isConnected } = useAccount()
 
+  // Fetch employees
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        setEmployeesLoading(true)
+        const response = await fetch("/api/employees")
+        if (response.ok) {
+          const data = await response.json()
+          setEmployees(data.employees || [])
+        }
+      } catch (error) {
+        console.error("Error fetching employees:", error)
+      } finally {
+        setEmployeesLoading(false)
+      }
+    }
+
+    fetchEmployees()
+  }, [])
+
   const handleSubmit = async () => {
-    if (!beneficiaryAddress || !usdcAmount || !destinationChainSelector) {
+    if (!recipientName || !beneficiaryAddress || !usdcAmount || !destinationChainSelector) {
       return
     }
 
     if (Number(usdcAmount) <= 0) {
-        setErrorMessage("Please enter a valid USDC amount (greater than zero)")
-        return
+      setErrorMessage("Please enter a valid USDC amount (greater than zero)")
+      return
     }
 
     try {
       setLoading(true)
+      setErrorMessage(null)
       setIsProcessingReceipt(false)
       setTransactionHash(undefined)
       setMessageId(undefined)
@@ -67,6 +92,7 @@ export default function Bridge() {
       }
     } catch (err) {
       console.error("Transaction failed:", err)
+      setErrorMessage("Transaction failed. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -86,6 +112,8 @@ export default function Bridge() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-48">
         <div className="space-y-8">
           <BridgeForm
+            recipientName={recipientName}
+            setRecipientName={setRecipientName}
             beneficiaryAddress={beneficiaryAddress}
             setBeneficiaryAddress={setBeneficiaryAddress}
             usdcAmount={usdcAmount}
@@ -99,6 +127,8 @@ export default function Bridge() {
             onSubmit={handleSubmit}
             onChainSwitch={handleChainSwitch}
             errorMessage={errorMessage}
+            employees={employees}
+            employeesLoading={employeesLoading}
           />
           {(loading || transactionHash) && (
             <TransactionStatus

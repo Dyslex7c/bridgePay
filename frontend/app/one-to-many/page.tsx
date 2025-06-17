@@ -10,7 +10,7 @@ import PageHeader from "./(components)/PageHeader"
 import AddBeneficiaryForm from "./(components)/AddBeneficiaryForm"
 import BatchSummary from "./(components)/BatchSummary"
 import BatchTransactionStatus from "./(components)/BatchTransactionStatus"
-import { batchContractAddress, batcherAbi } from "../constants"
+import { batchContractAddress, batcherAbi, chainSelectorMapping } from "../constants"
 import type { Employee } from "@/types/employee"
 
 type Beneficiary = {
@@ -39,9 +39,94 @@ export default function OneToMany() {
   const { isDark } = useTheme()
   const { chains, switchChain } = useSwitchChain()
   const chainId = useChainId()
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
   const { writeContractAsync } = useWriteContract()
   const publicClient = usePublicClient()
+
+  // Helper function to get chain name from selector
+  const getChainName = (selector: string) => {
+    return chainSelectorMapping[selector].name
+  }
+
+  // Helper function to get current chain name
+  const getCurrentChainName = () => {
+    const currentChain = chains.find((chain) => chain.id === chainId)
+    return currentChain?.name || "Unknown Chain"
+  }
+
+  // Function to save batch transaction to database
+  const saveBatchTransactionToDatabase = async (
+    txHash: `0x${string}`,
+    status: "pending" | "completed" | "failed" = "pending",
+  ) => {
+    try {
+      const recipients = listOfBeneficiaries.map((beneficiary) => ({
+        name: beneficiary.nickname,
+        address: beneficiary.beneficiaryAddress,
+        amount: Number(beneficiary.usdcAmount),
+        chain: beneficiary.destinationChainSelector,
+        chainName: getChainName(beneficiary.destinationChainSelector),
+      }))
+
+      const totalAmount = recipients.reduce((sum, recipient) => sum + recipient.amount, 0)
+
+      const transactionData = {
+        transactionId: txHash,
+        type: "one-to-many" as const,
+        senderAddress: address || "",
+        senderName: "", // Could be enhanced to get sender name
+        recipients,
+        sourceChain: chainId?.toString() || "",
+        sourceChainName: getCurrentChainName(),
+        totalAmount,
+        status,
+        transactionHash: txHash,
+        gasUsed: 0, // Will be updated when receipt is processed
+        gasFee: 0, // Will be updated when receipt is processed
+      }
+
+      const response = await fetch("/api/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(transactionData),
+      })
+
+      if (!response.ok) {
+        console.error("Failed to save batch transaction to database")
+      }
+    } catch (error) {
+      console.error("Error saving batch transaction:", error)
+    }
+  }
+
+  // Function to update transaction status
+  const updateTransactionStatus = async (
+    txHash: `0x${string}`,
+    status: "completed" | "failed",
+    gasUsed?: number,
+    gasFee?: number,
+  ) => {
+    try {
+      const updateData = {
+        status,
+        completedAt: new Date(),
+        ...(gasUsed && { gasUsed }),
+        ...(gasFee && { gasFee }),
+      }
+
+      await fetch(`/api/transactions/${txHash}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      })
+    } catch (error) {
+      console.error("Error updating transaction status:", error)
+    }
+  }
 
   const handleChainSwitch = async (targetChainId: number) => {
     try {
@@ -92,6 +177,7 @@ export default function OneToMany() {
       setAddingAllEmployees(true)
       setErrorMessage(null)
 
+      // Convert all employees to beneficiaries
       const employeeBeneficiaries: Beneficiary[] = employees.map((employee) => ({
         nickname: employee.name,
         beneficiaryAddress: employee.walletAddress,
@@ -99,6 +185,7 @@ export default function OneToMany() {
         usdcAmount: employee.monthlySalary.toString(),
       }))
 
+      // Filter out employees that are already in the batch (by wallet address)
       const existingAddresses = new Set(listOfBeneficiaries.map((b) => b.beneficiaryAddress.toLowerCase()))
       const newBeneficiaries = employeeBeneficiaries.filter(
         (emp) => !existingAddresses.has(emp.beneficiaryAddress.toLowerCase()),
@@ -109,15 +196,20 @@ export default function OneToMany() {
         return
       }
 
+      // Add all new beneficiaries to the list
       setListOfBeneficiaries((prev) => [...prev, ...newBeneficiaries])
 
+      // Show success message
       const addedCount = newBeneficiaries.length
       const skippedCount = employees.length - addedCount
 
       if (skippedCount > 0) {
         setErrorMessage(`Added ${addedCount} employees. ${skippedCount} were already in the batch.`)
+      } else {
+        setErrorMessage(`Successfully added all ${addedCount} employees to the batch!`)
       }
 
+      // Clear the success message after 3 seconds
       setTimeout(() => {
         setErrorMessage(null)
       }, 3000)
@@ -157,11 +249,24 @@ export default function OneToMany() {
       setTransactionHash(TxHash)
       setIsProcessingReceipt(true)
 
+      // Save batch transaction to database as pending
+      await saveBatchTransactionToDatabase(TxHash, "pending")
+
       if (publicClient) {
         try {
-          await publicClient.waitForTransactionReceipt({ hash: TxHash })
+          const receipt = await publicClient.waitForTransactionReceipt({ hash: TxHash })
+
+          // Calculate gas fee (gasUsed * gasPrice)
+          const gasUsed = Number(receipt.gasUsed)
+          const gasPrice = receipt.effectiveGasPrice || 0
+          const gasFee = Number(gasUsed * Number(gasPrice)) / 1e18 // Convert to ETH
+
+          // Update transaction status to completed
+          await updateTransactionStatus(TxHash, "completed", gasUsed, gasFee)
         } catch (receiptError) {
           console.error("Error waiting for transaction receipt:", receiptError)
+          // Update transaction status to failed
+          await updateTransactionStatus(TxHash, "failed")
         } finally {
           setIsProcessingReceipt(false)
         }
@@ -169,6 +274,11 @@ export default function OneToMany() {
     } catch (err) {
       console.error("Batch transfer failed:", err)
       setErrorMessage("Batch transfer failed. Please try again.")
+
+      // Update transaction status to failed if we have a hash
+      if (transactionHash) {
+        await updateTransactionStatus(transactionHash, "failed")
+      }
     } finally {
       setLoading(false)
     }
@@ -178,6 +288,7 @@ export default function OneToMany() {
     setListOfBeneficiaries((prev) => prev.filter((_, i) => i !== index))
   }
 
+  // Fetch employees for quick select
   useEffect(() => {
     const fetchEmployees = async () => {
       try {

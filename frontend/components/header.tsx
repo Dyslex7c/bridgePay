@@ -57,13 +57,13 @@ export default function Header() {
               Team
             </Link>
             <Link
-              href="#docs"
+              href="/dashboard"
               className={`
                 text-sm font-medium transition-colors duration-200
                 ${isDark ? "text-white/80 hover:text-white" : "text-black/80 hover:text-black"}
               `}
             >
-              Documentation
+              Dashboard
             </Link>
           </nav>
 

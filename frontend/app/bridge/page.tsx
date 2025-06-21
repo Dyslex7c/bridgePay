@@ -52,7 +52,7 @@ export default function Bridge() {
   }, [])
 
   const handleSubmit = async () => {
-    if (!recipientName || !beneficiaryAddress || !usdcAmount || !destinationChainSelector) {
+    if (!beneficiaryAddress || !usdcAmount || !destinationChainSelector) {
       return
     }
 

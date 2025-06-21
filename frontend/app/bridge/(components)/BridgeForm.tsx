@@ -52,7 +52,7 @@ export default function BridgeForm({
   employeesLoading,
 }: BridgeFormProps) {
   const { isDark } = useTheme()
-  const isFormValid = recipientName && beneficiaryAddress && usdcAmount && destinationChainSelector && isConnected
+  const isFormValid = beneficiaryAddress && usdcAmount && destinationChainSelector && isConnected
 
   const handleEmployeeSelect = (employeeId: string) => {
     if (employeeId === "manual") {
@@ -174,9 +174,11 @@ export default function BridgeForm({
           />
 
           <div className="space-y-2">
-            <label className={`text-base font-[Inter] ${isDark ? "text-white" : "text-black"}`}>Recipient Name</label>
+            <label className={`text-base font-[Inter] ${isDark ? "text-white" : "text-black"}`}>
+              Recipient Name (Optional)
+            </label>
             <Input
-              placeholder="Enter recipient name"
+              placeholder="Enter recipient name (optional)"
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
               className={`h-14 text-lg font-[Inter] transition-all duration-300 focus:scale-[1.02] ${

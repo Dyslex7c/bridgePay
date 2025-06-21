@@ -12,6 +12,7 @@ import BatchSummary from "./(components)/BatchSummary"
 import BatchTransactionStatus from "./(components)/BatchTransactionStatus"
 import { batchContractAddress, batcherAbi, chainSelectorMapping } from "../constants"
 import type { Employee } from "@/types/employee"
+import AirdropUploadForm from "./(components)/AirdropUploadForm"
 
 type Beneficiary = {
   nickname: string
@@ -20,7 +21,25 @@ type Beneficiary = {
   usdcAmount: string
 }
 
+const getChainSelectorFromName = (chainName: string): string | null => {
+  const normalizedName = chainName.toLowerCase().trim()
+  const chainMapping: Record<string, string> = {
+    ethereum: "16015286601757825753",
+    arbitrum: "3478487238524512106",
+    optimism: "5224473277236331295",
+    avalanche: "14767482510784806043",
+    base: "10344971235874465080",
+  }
+  return chainMapping[normalizedName] || null
+}
+
 export default function OneToMany() {
+  const [mode, setMode] = useState<"manual" | "airdrop">("manual")
+  const [csvFile, setCsvFile] = useState<File | null>(null)
+  const [csvData, setCsvData] = useState<any[]>([])
+  const [parsedRecipients, setParsedRecipients] = useState<Beneficiary[]>([])
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
   const [beneficiaryAddress, setBeneficiaryAddress] = useState<string>("")
   const [nickname, setNickname] = useState("")
   const [usdcAmount, setUsdcAmount] = useState("")
@@ -52,6 +71,96 @@ export default function OneToMany() {
   const getCurrentChainName = () => {
     const currentChain = chains.find((chain) => chain.id === chainId)
     return currentChain?.name || "Unknown Chain"
+  }
+
+  const parseCsvFile = (file: File): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result as string
+          const lines = text.split("\n").filter((line) => line.trim())
+          const headers = lines[0].split(",").map((h) => h.trim().toLowerCase())
+
+          const data = lines.slice(1).map((line) => {
+            const values = line.split(",").map((v) => v.trim())
+            const row: any = {}
+            headers.forEach((header, index) => {
+              row[header] = values[index] || ""
+            })
+            return row
+          })
+
+          resolve(data)
+        } catch (error) {
+          reject(error)
+        }
+      }
+      reader.onerror = () => reject(new Error("Failed to read file"))
+      reader.readAsText(file)
+    })
+  }
+
+  const handleCsvUpload = async (file: File) => {
+    try {
+      setUploadError(null)
+      setCsvFile(file)
+
+      const data = await parseCsvFile(file)
+      setCsvData(data)
+
+      // Validate and convert CSV data to beneficiaries
+      const recipients: Beneficiary[] = []
+      const errors: string[] = []
+
+      data.forEach((row, index) => {
+        const address = row["wallet_address"] || row["address"] || row["wallet"]
+        const amount = row["amount"] || row["usdc_amount"] || row["usdc"]
+        const chainName = row["chain"] || row["chain_name"] || row["network"]
+        const name = row["name"] || row["nickname"] || `Recipient ${index + 1}`
+
+        if (!address) {
+          errors.push(`Row ${index + 1}: Missing wallet address`)
+          return
+        }
+
+        if (!amount || isNaN(Number(amount))) {
+          errors.push(`Row ${index + 1}: Invalid amount`)
+          return
+        }
+
+        if (!chainName) {
+          errors.push(`Row ${index + 1}: Missing chain name`)
+          return
+        }
+
+        const chainSelector = getChainSelectorFromName(chainName)
+        if (!chainSelector) {
+          errors.push(
+            `Row ${index + 1}: Invalid chain name "${chainName}". Supported: Ethereum, Arbitrum, Optimism, Avalanche, Base`,
+          )
+          return
+        }
+
+        recipients.push({
+          nickname: name,
+          beneficiaryAddress: address,
+          destinationChainSelector: chainSelector,
+          usdcAmount: amount.toString(),
+        })
+      })
+
+      if (errors.length > 0) {
+        setUploadError(`CSV validation errors:\n${errors.join("\n")}`)
+        return
+      }
+
+      setParsedRecipients(recipients)
+      // Automatically add to batch
+      setListOfBeneficiaries((prev) => [...prev, ...recipients])
+    } catch (error) {
+      setUploadError("Failed to parse CSV file. Please check the format.")
+    }
   }
 
   // Function to save batch transaction to database
@@ -275,7 +384,6 @@ export default function OneToMany() {
       console.error("Batch transfer failed:", err)
       setErrorMessage("Batch transfer failed. Please try again.")
 
-      // Update transaction status to failed if we have a hash
       if (transactionHash) {
         await updateTransactionStatus(transactionHash, "failed")
       }
@@ -288,7 +396,6 @@ export default function OneToMany() {
     setListOfBeneficiaries((prev) => prev.filter((_, i) => i !== index))
   }
 
-  // Fetch employees for quick select
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -320,32 +427,60 @@ export default function OneToMany() {
     <div className={`min-h-screen pt-20 pb-12 transition-colors duration-300 ${isDark ? "bg-black" : "bg-white"}`}>
       <Header />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-48">
-        <div className="space-y-8">
+        <div className="space-y-4">
           <PageHeader />
 
-          <AddBeneficiaryForm
-            nickname={nickname}
-            setNickname={setNickname}
-            beneficiaryAddress={beneficiaryAddress}
-            setBeneficiaryAddress={setBeneficiaryAddress}
-            usdcAmount={usdcAmount}
-            setUsdcAmount={setUsdcAmount}
-            destinationChainSelector={destinationChainSelector}
-            setDestinationChainSelector={setDestinationChainSelector}
-            onAddBeneficiary={handleAddBeneficiary}
-            isConnected={isConnected}
-            chains={chains}
-            chainId={chainId}
-            onChainSwitch={handleChainSwitch}
-            errorMessage={errorMessage}
-            employees={employees}
-            selectedEmployee={selectedEmployee}
-            setSelectedEmployee={setSelectedEmployee}
-            onSelectEmployee={handleSelectEmployee}
-            loadingEmployees={loadingEmployees}
-            onAddAllEmployees={handleAddAllEmployees}
-            addingAllEmployees={addingAllEmployees}
-          />
+          <div className="flex justify-end w-full">
+            <div className="flex items-center gap-3">
+              <label className={`text-sm font-[Inter] ${isDark ? "text-white/80" : "text-black/80"}`}>Mode:</label>
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as "manual" | "airdrop")}
+                className={`px-4 py-2 rounded-lg border text-sm font-[Inter] transition-all duration-300 ${
+                  isDark
+                    ? "bg-black border-white/20 text-white focus:border-white/40"
+                    : "bg-white border-black/20 text-black focus:border-black/40"
+                }`}
+              >
+                <option value="manual">Normal Distribution</option>
+                <option value="airdrop">Airdrop Distribution</option>
+              </select>
+            </div>
+          </div>
+
+          {mode === "manual" ? (
+            <AddBeneficiaryForm
+              nickname={nickname}
+              setNickname={setNickname}
+              beneficiaryAddress={beneficiaryAddress}
+              setBeneficiaryAddress={setBeneficiaryAddress}
+              usdcAmount={usdcAmount}
+              setUsdcAmount={setUsdcAmount}
+              destinationChainSelector={destinationChainSelector}
+              setDestinationChainSelector={setDestinationChainSelector}
+              onAddBeneficiary={handleAddBeneficiary}
+              isConnected={isConnected}
+              chains={chains}
+              chainId={chainId}
+              onChainSwitch={handleChainSwitch}
+              errorMessage={errorMessage}
+              employees={employees}
+              selectedEmployee={selectedEmployee}
+              setSelectedEmployee={setSelectedEmployee}
+              onSelectEmployee={handleSelectEmployee}
+              loadingEmployees={loadingEmployees}
+              onAddAllEmployees={handleAddAllEmployees}
+              addingAllEmployees={addingAllEmployees}
+            />
+          ) : (
+            <AirdropUploadForm
+              csvFile={csvFile}
+              parsedRecipients={parsedRecipients}
+              uploadError={uploadError}
+              onFileUpload={handleCsvUpload}
+              isConnected={isConnected}
+            />
+          )}
 
           <BatchSummary
             beneficiaries={listOfBeneficiaries}

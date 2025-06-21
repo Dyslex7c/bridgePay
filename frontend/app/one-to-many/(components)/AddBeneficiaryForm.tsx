@@ -58,7 +58,7 @@ export default function AddBeneficiaryForm({
   addingAllEmployees,
 }: AddBeneficiaryFormProps) {
   const { isDark } = useTheme()
-  const isFormValid = nickname && beneficiaryAddress && destinationChainSelector && usdcAmount && isConnected
+  const isFormValid = beneficiaryAddress && destinationChainSelector && usdcAmount && isConnected
 
   const totalEmployeeSalary = employees.reduce((sum, emp) => sum + emp.monthlySalary, 0)
 
@@ -81,7 +81,7 @@ export default function AddBeneficiaryForm({
           </CardDescription>
 
           <div className="space-y-4 mb-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-4">
               <div className={`w-1 h-6 rounded-full ${isDark ? "bg-blue-400" : "bg-blue-600"}`} />
               <h3 className={`text-lg font-[Poppins] font-semibold ${isDark ? "text-white" : "text-black"}`}>
                 Quick Select Employee
@@ -221,15 +221,15 @@ export default function AddBeneficiaryForm({
               </div>
             )}
           </div>
-
-          <div className={`w-full h-px ${isDark ? "bg-white/10" : "bg-black/10"} mb-6`} />
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className={`text-sm font-[Inter] ${isDark ? "text-white" : "text-black"}`}>Nickname</label>
+              <label className={`text-sm font-[Inter] ${isDark ? "text-white" : "text-black"}`}>
+                Nickname (Optional)
+              </label>
               <Input
-                placeholder="e.g., John Doe"
+                placeholder="e.g., John Doe (optional)"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 className={`h-14 text-lg font-[Inter] transition-all duration-300 focus:scale-[1.02] ${isDark ? "bg-white/5 border-white/20 text-white placeholder:text-white/50 focus:border-white/40" : "bg-white border-black/10 text-black placeholder:text-black/50 focus:border-black/30"}`}

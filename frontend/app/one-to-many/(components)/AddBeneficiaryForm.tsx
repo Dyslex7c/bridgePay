@@ -25,6 +25,7 @@ interface AddBeneficiaryFormProps {
   chainId: number
   onChainSwitch: (chainId: number) => void
   errorMessage: string | null
+  successMessage: string | null
   employees: Employee[]
   selectedEmployee: Employee | null
   setSelectedEmployee: (employee: Employee | null) => void
@@ -49,6 +50,7 @@ export default function AddBeneficiaryForm({
   chainId,
   onChainSwitch,
   errorMessage,
+  successMessage,
   employees,
   selectedEmployee,
   setSelectedEmployee,
@@ -307,6 +309,14 @@ export default function AddBeneficiaryForm({
               <AlertCircle className="h-5 w-5" />
               <AlertDescription className={`font-[Inter] font-medium pt-1 ${isDark ? "text-red-500" : "text-red-600"}`}>
                 {errorMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+          {successMessage && (
+            <Alert className={`${isDark ? "border-green-500/20 bg-green-500/10" : "border-green-600/20 bg-green-600/10"}`}>
+              <AlertCircle className="h-5 w-5" />
+              <AlertDescription className={`font-[Inter] font-medium pt-1 ${isDark ? "text-green-500" : "text-green-600"}`}>
+                {successMessage}
               </AlertDescription>
             </Alert>
           )}

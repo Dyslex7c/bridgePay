@@ -49,6 +49,7 @@ export default function OneToMany() {
   const [transactionHash, setTransactionHash] = useState<`0x${string}`>()
   const [isProcessingReceipt, setIsProcessingReceipt] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const [employees, setEmployees] = useState<Employee[]>([])
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
@@ -315,7 +316,7 @@ export default function OneToMany() {
       if (skippedCount > 0) {
         setErrorMessage(`Added ${addedCount} employees. ${skippedCount} were already in the batch.`)
       } else {
-        setErrorMessage(`Successfully added all ${addedCount} employees to the batch!`)
+        setSuccessMessage(`Successfully added all ${addedCount} employees to the batch!`)
       }
 
       // Clear the success message after 3 seconds
@@ -464,6 +465,7 @@ export default function OneToMany() {
               chainId={chainId}
               onChainSwitch={handleChainSwitch}
               errorMessage={errorMessage}
+              successMessage={successMessage}
               employees={employees}
               selectedEmployee={selectedEmployee}
               setSelectedEmployee={setSelectedEmployee}

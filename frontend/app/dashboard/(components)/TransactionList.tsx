@@ -197,7 +197,6 @@ export default function TransactionList({ transactions, loading }: TransactionLi
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <div className="flex items-center space-x-4 text-sm text-gray-200">
                 <span>Type: {transaction.type === "one-to-many" ? "Batch Payment" : "Single Payment"}</span>
-                {transaction.gasFee && <span>Gas: {transaction.gasFee.toFixed(4)} ETH</span>}
               </div>
 
               {transaction.transactionHash && (
